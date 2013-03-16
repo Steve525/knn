@@ -210,6 +210,7 @@ public class MLSystemManager {
 						else if (argv[i].equals("-A"))
 						{
 							arff = argv[++i];
+							System.out.println("ARFF: " + arff);
 						}
 						else if (argv[i].equals("-L"))
 						{
