@@ -9,21 +9,21 @@ import toolkit.SupervisedLearner;
 public class InstanceBasedLearner extends SupervisedLearner {
 
 	private Matrix _trainingExamples;
+	private Matrix _trainingClassifications;
 	private int _k;
 	static double MISSING = Double.MAX_VALUE;
 	
 	@Override
 	public void train(Matrix features, Matrix labels) throws Exception {
 		_k = 3;
-		final String instanceFile = "training-examples/????";
-		_trainingExamples = new Matrix();
-		_trainingExamples.loadArff(instanceFile);
+		_trainingExamples = features;
+		_trainingClassifications = labels;
 	}
 
 	@Override
 	public void predict(double[] features, double[] labels) throws Exception {
-		KNN knn = new KNN(_k, _trainingExamples);
-
+		KNN knn = new KNN(_k, _trainingExamples, _trainingClassifications);
+		labels[0] = knn.classify(features, true, false);
 	}
 
 }

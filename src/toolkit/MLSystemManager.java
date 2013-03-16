@@ -98,8 +98,8 @@ public class MLSystemManager {
 			learner.train(features, labels);
 			double elapsedTime = System.currentTimeMillis() - startTime;
 			System.out.println("Time to train (in seconds): " + elapsedTime / 1000.0);
-			double trainAccuracy = learner.measureAccuracy(features, labels, null);
-			System.out.println("Training set accuracy: " + trainAccuracy);
+//			double trainAccuracy = learner.measureAccuracy(features, labels, null);
+			System.out.println("Training set accuracy: INSTANCE-BASED LEARNING MODEL.");
 			Matrix testFeatures = new Matrix(testData, 0, 0, testData.rows(), testData.cols() - 1);
 			Matrix testLabels = new Matrix(testData, 0, testData.cols() - 1, testData.rows(), 1);
 			Matrix confusion = new Matrix();

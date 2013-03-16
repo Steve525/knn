@@ -14,7 +14,10 @@ public class Instance {
 	List<Double> _values;
 	
 	public Instance(double[] values) {
-		_values = new ArrayList(Arrays.asList(values));
+		_values = new ArrayList<Double>();
+		for (double val : values) {
+			_values.add(val);
+		}
 	}
 	
 	public List<Double> getValues() {
