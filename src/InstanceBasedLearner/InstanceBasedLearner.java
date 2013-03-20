@@ -27,7 +27,7 @@ public class InstanceBasedLearner extends SupervisedLearner {
 	@Override
 	public void predict(double[] features, double[] labels) throws Exception {
 		KNN knn = new KNN(_k, _trainingExamples, _trainingClassifications);
-		labels[0] = knn.classify(features, false, true);
+		labels[0] = knn.classify(features, false, false);
 	}
 
 }
