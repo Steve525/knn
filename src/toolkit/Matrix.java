@@ -133,9 +133,9 @@ public class Matrix {
 		m_str_to_enum = new ArrayList< TreeMap<String, Integer> >();
 		m_enum_to_str = new ArrayList< TreeMap<Integer, String> >();
 		boolean READDATA = false;
-		System.out.println("File name: " + filename);
+//		System.out.println("File name: " + filename);
 		String fullFilePath = System.getProperty("user.dir") + File.separator + filename;
-		System.out.println("File path: " + fullFilePath);
+//		System.out.println("File path: " + fullFilePath);
 		Scanner s = new Scanner(new File(fullFilePath));
 		while (s.hasNext()) {
 			String line = s.nextLine().trim();

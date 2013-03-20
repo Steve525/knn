@@ -28,24 +28,28 @@ public class KNN {
 	
 	public double classify(double[] values, boolean useClassification, boolean useWeighted) {
 		Instance instance = new Instance(values);
-		List<DistancePair> nearestNeightbors = getNearestNeighbors(getDistancesFromQuery(instance));
+		List<DistancePair> nearestNeighbors = getNearestNeighbors(getDistancesFromQuery(instance));
 		if (useClassification && !useWeighted)
-			return getUnweightedClassification(nearestNeightbors);
+			return getUnweightedClassification(nearestNeighbors);
 		if (useClassification && useWeighted)
-			return getWeightedClassification(nearestNeightbors);
+			return getWeightedClassification(nearestNeighbors);
 		if (!useClassification && !useWeighted)
-			return getRegressionUnweighted(nearestNeightbors);
+			return getRegressionUnweighted(nearestNeighbors);
 		if (!useClassification && useWeighted)
-			return -1;
-		return -1;
+			return getRegressionWeighted(nearestNeighbors);
+		throw new RuntimeException();
 	}
 	
-	// Regression
+	//-------------------------------------------------------------------------
+	//-------------------------------------------------------------------------
+	// Regression -------------------------------------------------------------
+	//-------------------------------------------------------------------------
+	//-------------------------------------------------------------------------
 	private double getRegressionUnweighted(List<DistancePair> nearestNeighbors) {
 		assert(_k == nearestNeighbors.size());
 		double totalClassification = 0;
 		for (DistancePair distancePair : nearestNeighbors) {
-			totalClassification += _trainingClassifications.get(distancePair.getValue(), 0);
+			totalClassification += _trainingClassifications.get((int)distancePair.getValue(), 0);
 		}
 		return (totalClassification / _k); 
 	}
@@ -54,13 +58,14 @@ public class KNN {
 		double w = 0;
 		double top = 0;
 		for (DistancePair neighbor : nearestNeighbors) {
-			top += (1 / (Math.pow(neighbor.getKey(), 2))) * neighbor.getKey();
+			top += (1 / (Math.pow(neighbor.getKey(), 2))) * _trainingClassifications.get(neighbor.getValue(), 0);
 			w += 1 / (Math.pow(neighbor.getKey(), 2));
 		}
-		return top / w;
+		return (top / w);
 	}
-	
-	// Classification Methods -------------------------------------------------
+	//-------------------------------------------------------------------------
+	//-------------------------------------------------------------------------
+	// Classification ---------------------------------------------------------
 	// ------------------------------------------------------------------------
 	private double getUnweightedClassification(List<DistancePair> nearestNeighbors) {
 		assert(_k == nearestNeighbors.size());
@@ -116,6 +121,10 @@ public class KNN {
 		
 		return bestClass;
 	}
+	//-----------------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------
 	
 	private class DistanceComparator implements Comparator<DistancePair> {
 
@@ -127,6 +136,8 @@ public class KNN {
 	}
 	
 	private List<DistancePair> getNearestNeighbors(List<DistancePair> distances) {
+		if (_k == 1)
+			return distances.subList(0, 1);
 		Collections.sort(distances, new DistanceComparator());
 		return distances.subList(0, _k - 1);
 	}
@@ -141,9 +152,12 @@ public class KNN {
 			for (int j = 0; j < trainingInstance.length; j++) {
 				double trainingValue = trainingInstance[j];
 				double validationValue = testInstance.get(j);
-				// check if value is CONTINUOUS, NOMINAL, or MISSING
+//				double trainingLabelType = _trainingExamples.valueCount(j);
+//				System.out.println("VALUE COUNT: " + trainingLabelType);
+//				if (trainingLabelType == 0)
 				distance += Math.pow(trainingValue - validationValue, 2);
 			}
+//			System.out.println("DISTANCE: " + distance + ", " + i);
 			distances.add(new DistancePair(distance, i));
 		}
 		return distances;

@@ -7,7 +7,9 @@ package toolkit;
 
 import java.util.ArrayList;
 import java.util.Random;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 
 import InstanceBasedLearner.InstanceBasedLearner;
 
@@ -17,17 +19,15 @@ public class MLSystemManager {
 	/**
 	 *  When you make a new learning algorithm, you should add a line for it to this method.
 	 */
-	public SupervisedLearner getLearner(String model, Random rand) throws Exception
+	public SupervisedLearner getLearner(String model, Random rand, int k) throws Exception
 	{
-		//if (model.equals("baseline")) return new BaselineLearner();
-		// else if (model.equals("perceptron")) return new Perceptron(rand);
-		//else if (model.equals("neuralnet")) return new NeuralNet(rand);
-		//if (model.equals("decisiontree")) return new DecisionTree();
-		if (model.equals("knn")) return new InstanceBasedLearner();
-		else throw new Exception("Unrecognized model: " + model);
+		if (model.equals("knn"))
+			return new InstanceBasedLearner(k);
+		else
+			throw new Exception("Unrecognized model: " + model);
 	}
 
-	public void run(String[] args) throws Exception {
+	public void run(String[] args, int k) throws Exception {
 
 		//args = new String[]{"-L", "baseline", "-A", "data/iris.arff", "-E", "cross", "10", "-N"};
 
@@ -44,7 +44,7 @@ public class MLSystemManager {
 		boolean normalize = parser.getNormalize();
 
 		// Load the model
-		SupervisedLearner learner = getLearner(learnerName, rand);
+		SupervisedLearner learner = getLearner(learnerName, rand, k);
 
 		// Load the ARFF file
 		Matrix data = new Matrix();
@@ -84,6 +84,10 @@ public class MLSystemManager {
 		}
 		else if (evalMethod.equals("static"))
 		{
+//			String fileOutName = "Part3_" + k + "-nn.txt";
+//			File fileOut = new File(fileOutName);
+//			BufferedWriter out = new BufferedWriter(new FileWriter(fileOut));
+			
 			Matrix testData = new Matrix();
 			testData.loadArff(evalParameter);
 			if (normalize)
@@ -99,7 +103,7 @@ public class MLSystemManager {
 			double elapsedTime = System.currentTimeMillis() - startTime;
 			System.out.println("Time to train (in seconds): " + elapsedTime / 1000.0);
 //			double trainAccuracy = learner.measureAccuracy(features, labels, null);
-			System.out.println("Training set accuracy: INSTANCE-BASED LEARNING MODEL.");
+			System.out.println("Training set accuracy: N/A (Instance based learning)");
 			Matrix testFeatures = new Matrix(testData, 0, 0, testData.rows(), testData.cols() - 1);
 			Matrix testLabels = new Matrix(testData, 0, testData.cols() - 1, testData.rows(), 1);
 			Matrix confusion = new Matrix();
@@ -292,6 +296,8 @@ public class MLSystemManager {
 	public static void main(String[] args) throws Exception
 	{
 		MLSystemManager ml = new MLSystemManager();
-		ml.run(args);
+		for (int i = 1; i < 16; i+=2) {
+			ml.run(args, i);
+		}
 	}
 }

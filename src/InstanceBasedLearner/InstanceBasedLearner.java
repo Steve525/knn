@@ -12,18 +12,22 @@ public class InstanceBasedLearner extends SupervisedLearner {
 	private Matrix _trainingClassifications;
 	private int _k;
 	static double MISSING = Double.MAX_VALUE;
+
+	public InstanceBasedLearner(int k) {
+		_k = k;
+	}
 	
 	@Override
 	public void train(Matrix features, Matrix labels) throws Exception {
-		_k = 3;
 		_trainingExamples = features;
 		_trainingClassifications = labels;
+		System.out.println("\t" + _k + "-nn learning algorithm.");
 	}
 
 	@Override
 	public void predict(double[] features, double[] labels) throws Exception {
 		KNN knn = new KNN(_k, _trainingExamples, _trainingClassifications);
-		labels[0] = knn.classify(features, true, false);
+		labels[0] = knn.classify(features, false, true);
 	}
 
 }
