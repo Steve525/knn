@@ -9,25 +9,29 @@ import toolkit.SupervisedLearner;
 public class InstanceBasedLearner extends SupervisedLearner {
 
 	private Matrix _trainingExamples;
-	private Matrix _trainingClassifications;
+	private Matrix _trainingLabels;
 	private int _k;
-	static double MISSING = Double.MAX_VALUE;
-
+	private KNN _knn;
+	
 	public InstanceBasedLearner(int k) {
 		_k = k;
-	}
+	}		
 	
 	@Override
 	public void train(Matrix features, Matrix labels) throws Exception {
-		_trainingExamples = features;
-		_trainingClassifications = labels;
 		System.out.println("\t" + _k + "-nn learning algorithm.");
+		_trainingExamples = features;
+		_trainingLabels = labels;
+		_knn = new KNN(_k, _trainingExamples, _trainingLabels);
+//		_knn.reduceAllKnn();
+		_knn.reduceVarSim();
+//		System.out.println(_trainingExamples.rows());
 	}
 
 	@Override
 	public void predict(double[] features, double[] labels) throws Exception {
-		KNN knn = new KNN(_k, _trainingExamples, _trainingClassifications);
-		labels[0] = knn.classify(features, false, false);
+		labels[0] = _knn.classify(features, true, true);
 	}
+
 
 }

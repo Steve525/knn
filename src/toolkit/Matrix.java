@@ -241,6 +241,8 @@ public class Matrix {
 
 	// Returns the number of columns (or attributes) in the matrix
 	public int cols() { return m_attr_name.size(); }
+	
+	public void remove(int r) { m_data.remove(r); }
 
 	// Returns the specified row
 	public double[] row(int r) { return m_data.get(r); }

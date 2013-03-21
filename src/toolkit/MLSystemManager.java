@@ -96,17 +96,27 @@ public class MLSystemManager {
 			System.out.println("Calculating accuracy on separate test set...");
 			System.out.println("Test set name: " + evalParameter);
 			System.out.println("Number of test instances: " + testData.rows());
-			Matrix features = new Matrix(data, 0, 0, data.rows(), data.cols() - 1);
-			Matrix labels = new Matrix(data, 0, data.cols() - 1, data.rows(), 1);
+//			
+			int trainSize = (int)(0.16 * data.rows());
+			System.out.println("Actual test examples size: " + trainSize);
+//			Matrix trainFeatures = new Matrix(data, 0, 0, trainSize, data.cols() - 1);
+//			Matrix trainLabels = new Matrix(data, 0, data.cols() - 1, trainSize, 1);
+//			Matrix possibleTrainingFeatures = new Matrix(data, trainSize, 0, data.rows() - trainSize, data.cols() - 1);
+//			Matrix possibleTrainingLabels = new Matrix(data, trainSize, data.cols() - 1, data.rows() - trainSize, 1);
+			
+			Matrix features = new Matrix(data, 0, 0, trainSize, data.cols() - 1);
+			Matrix labels = new Matrix(data, 0, data.cols() - 1, trainSize, 1);
+			Matrix testFeatures = new Matrix(testData, 0, 0, testData.rows(), testData.cols() - 1);
+			Matrix testLabels = new Matrix(testData, 0, testData.cols() - 1, testData.rows(), 1);
+			Matrix confusion = new Matrix();
+			// Training!
 			double startTime = System.currentTimeMillis();
 			learner.train(features, labels);
 			double elapsedTime = System.currentTimeMillis() - startTime;
 			System.out.println("Time to train (in seconds): " + elapsedTime / 1000.0);
 //			double trainAccuracy = learner.measureAccuracy(features, labels, null);
 			System.out.println("Training set accuracy: N/A (Instance based learning)");
-			Matrix testFeatures = new Matrix(testData, 0, 0, testData.rows(), testData.cols() - 1);
-			Matrix testLabels = new Matrix(testData, 0, testData.cols() - 1, testData.rows(), 1);
-			Matrix confusion = new Matrix();
+			// Testing!
 			double testAccuracy = learner.measureAccuracy(testFeatures, testLabels, confusion);
 			System.out.println("Test set accuracy: " + testAccuracy);
 			if(printConfusionMatrix) {
@@ -133,8 +143,8 @@ public class MLSystemManager {
 			learner.train(trainFeatures, trainLabels);
 			double elapsedTime = System.currentTimeMillis() - startTime;
 			System.out.println("Time to train (in seconds): " + elapsedTime / 1000.0);
-			double trainAccuracy = learner.measureAccuracy(trainFeatures, trainLabels, null);
-			System.out.println("Training set accuracy: " + trainAccuracy);
+//			double trainAccuracy = learner.measureAccuracy(trainFeatures, trainLabels, null);
+			System.out.println("Training set accuracy: N/A (instance based learning).");
 			Matrix confusion = new Matrix();
 			double testAccuracy = learner.measureAccuracy(testFeatures, testLabels, confusion);
 			System.out.println("Test set accuracy: " + testAccuracy);
@@ -296,8 +306,8 @@ public class MLSystemManager {
 	public static void main(String[] args) throws Exception
 	{
 		MLSystemManager ml = new MLSystemManager();
-		for (int i = 1; i < 16; i+=2) {
-			ml.run(args, i);
-		}
+//		for (int i = 1; i < 16; i+=2) {
+			ml.run(args, 10);
+//		}
 	}
 }

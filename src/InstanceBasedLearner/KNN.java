@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import toolkit.Matrix;
 
@@ -38,6 +39,40 @@ public class KNN {
 		if (!useClassification && useWeighted)
 			return getRegressionWeighted(nearestNeighbors);
 		throw new RuntimeException();
+	}
+	
+	public void reduceAllKnn() {
+		List<Integer> bads = new ArrayList<Integer>();
+		for (int i = 0; i < _trainingExamples.rows(); i++) {
+			// Done with weighted non-regression.
+			System.out.println("Instance #" + i);
+			if (classify(_trainingExamples.row(i), true, true) != _trainingClassifications.get(i, 0)) {
+				bads.add(i);
+				System.out.println("Bad instance, will be removed: " + i);
+			}
+		}
+		for (int i : bads) {
+			_trainingExamples.remove(i);
+			_trainingClassifications.remove(i);
+		}
+		_trainingExamples.print();
+	}
+	
+	public void reduceVarSim() {
+		for (int i = 0; i < _trainingExamples.rows(); i++) {
+			Instance instance = new Instance(_trainingExamples.row(i));
+			List<DistancePair> nearestNeighbors = 
+				getNearestNeighbors(getDistancesFromQuery(instance));
+			Set<Integer> integers = new HashSet<Integer>();
+			for (DistancePair neighbor : nearestNeighbors) {
+				integers.add(neighbor.getValue());
+			}
+			if (integers.size() == 1) {
+				_trainingExamples.remove(i);
+				_trainingClassifications.remove(i);
+				System.out.println("Instance#: " + i);
+			}
+		}
 	}
 	
 	//-------------------------------------------------------------------------
@@ -142,25 +177,81 @@ public class KNN {
 		return distances.subList(0, _k - 1);
 	}
 	
-	private List<DistancePair> getDistancesFromQuery(Instance validationInstance) {
+	private List<DistancePair> getDistancesFromQuery(Instance queryinstance) {
 		List<DistancePair> distances = new ArrayList<DistancePair>();
 		double distance;
 		for (int i = 0; i < _trainingExamples.rows(); i++) {
 			distance = 0;
 			double[] trainingInstance = _trainingExamples.row(i);
-			ArrayList<Double> testInstance = (ArrayList) validationInstance.getValues();
+			ArrayList<Double> queryInstance = (ArrayList) queryinstance.getValues();
 			for (int j = 0; j < trainingInstance.length; j++) {
 				double trainingValue = trainingInstance[j];
-				double validationValue = testInstance.get(j);
-//				double trainingLabelType = _trainingExamples.valueCount(j);
-//				System.out.println("VALUE COUNT: " + trainingLabelType);
-//				if (trainingLabelType == 0)
-				distance += Math.pow(trainingValue - validationValue, 2);
+				double queryValue = queryInstance.get(j);
+				if (trainingValue == queryValue)
+					distance += 0;
+				// If the training value or the query value are missing, distance is '1'
+				else if (trainingValue == Double.MAX_VALUE || queryValue == Double.MAX_VALUE)
+					distance += 1;
+				else {
+					double trainingLabelType = _trainingExamples.valueCount(j);
+					// If the training attribute is continuous... 
+					if (trainingLabelType == 0)
+						distance += (Math.abs(trainingValue - queryValue) / (4 * standardDeviation(j))); // change 0 to standard deviation!
+					else {	// If the training attribute is nominal...
+						distance += vdm(j, trainingValue, queryValue);
+					}
+//					distance += Math.pow(trainingValue - queryValue, 2);
+				}
 			}
-//			System.out.println("DISTANCE: " + distance + ", " + i);
 			distances.add(new DistancePair(distance, i));
 		}
 		return distances;
+	}
+	
+	// Returns standard deviation for values of attribute a
+	private double standardDeviation(int a) {
+		double u = 0;
+		for (int i = 0; i < _trainingExamples.rows(); i++) {
+			u += _trainingExamples.get(i, a);
+		}
+		u = u / _trainingExamples.rows();
+		double sigma = 0;
+		for (int i = 0; i < _trainingExamples.rows(); i++) {
+			sigma += Math.pow(_trainingExamples.get(i, a) - u, 2);
+		}
+		sigma = sigma / _trainingExamples.rows();
+		return sigma;
+	}
+	
+	private double vdm(int a, double x, double y) {
+		double vdm = 0;
+		for (int i = 0; i < _trainingClassifications.valueCount(0); i++) {
+			int countX = 0;
+			int countY = 0;
+			int countXC = 0;
+			int countYC = 0;
+			for (int j = 0; j < _trainingExamples.rows(); j++) {
+				double val = _trainingExamples.get(j, a);
+				double outputClass = _trainingClassifications.get(j, 0);
+				if (val == x)
+					countX++;
+				if (val == y)
+					countY++;
+				if (val == x && (int)outputClass == i)
+					countXC++;
+				if (val == y && (int)outputClass == i)
+					countYC++;
+			}
+			double ratioX = 0;
+			if (countX != 0)
+				ratioX = countXC / countX;
+			double ratioY = 0;
+			if (countY == 0)
+				ratioY = countYC / countY;
+			vdm += Math.pow(ratioX - ratioY, 2);
+		}
+		
+		return vdm;
 	}
 	
 	public class DistancePair {
